@@ -1,61 +1,50 @@
-//
-//  ContentView.swift
-//  ExpenseTracker
-//
-//  Created by Cynthia Ma on 2026-05-23.
-//
+// ContentView.swift
+// Responsibility: Root TabView — the permanent three-tab shell of the app.
+//                 Owns tab selection state. Each tab hosts its own navigation stack.
+// Depends on: SummaryView, TransactionsView, SettingsView
+// Used by: AppRootView (ExpenseTrackerApp.swift) — this is the top-level view
 
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @State private var selectedTab: Int = 1
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
+        TabView(selection: $selectedTab) {
+            SummaryView()
+                .tabItem { Label("Summary",      systemImage: "chart.pie.fill") }
+                .tag(0)
+
+            TransactionsView()
+                .tabItem { Label("Transactions", systemImage: "list.bullet") }
+                .tag(1)
+
+            SettingsView()
+                .tabItem { Label("Settings",     systemImage: "gearshape.fill") }
+                .tag(2)
         }
+        .onAppear { applyTabBarAppearance() }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+    private func applyTabBarAppearance() {
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor.systemBackground
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .environmentObject(GmailAuthService())
+        .environmentObject(SyncService(
+            fetcher:         GmailFetchService(auth: GmailAuthService()),
+            parser:          EmailParserService(),
+            modelContext:    try! ModelContext(ModelContainer(for: Transaction.self, Category.self)),
+            labelRulesStore: LabelRulesStore()
+        ))
+        .environmentObject(LabelRulesStore())
+        .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }
