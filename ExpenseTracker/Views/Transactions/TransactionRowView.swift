@@ -37,7 +37,7 @@ struct TransactionRowView: View {
 
             Spacer()
 
-            Text(transaction.amount, format: .currency(code: transaction.currency.code).presentation(.narrow))
+            Text("\(transaction.currency.symbol)\(transaction.amount, format: .number.precision(.fractionLength(2)))")
                 .font(.body.monospaced())
                 .foregroundStyle(amountColor)
         }

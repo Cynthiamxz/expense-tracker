@@ -29,7 +29,7 @@ struct SettingsView: View {
                     labelRulesCard
                     categoriesCard
 
-                    Text("Expense Tracker v1.0")
+                    Text("Expense Tracker v1.1")
                         .font(.caption.monospaced())
                         .foregroundStyle(Color(hex: Constants.Design.mutedText))
                         .frame(maxWidth: .infinity, alignment: .center)

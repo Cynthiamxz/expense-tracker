@@ -68,7 +68,7 @@ struct TransactionDetailView: View {
     private var readOnlySection: some View {
         Section("Details") {
             LabeledContent("Amount") {
-                Text(transaction.amount, format: .currency(code: transaction.currency.code).presentation(.narrow))
+                Text("\(transaction.currency.symbol)\(transaction.amount, format: .number.precision(.fractionLength(2)))")
                     .foregroundStyle(.secondary)
             }
             LabeledContent("Date") {

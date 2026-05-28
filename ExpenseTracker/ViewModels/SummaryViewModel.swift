@@ -60,12 +60,15 @@ class SummaryViewModel: ObservableObject {
         let (rangeStart, rangeEnd) = DateHelpers.monthRange(for: selectedMonth)
         let monthly = cachedTransactions.filter { $0.date >= rangeStart && $0.date < rangeEnd }
 
-        totalIncome = monthly.filter(\.isIncome).reduce(0) { $0 + $1.amount }
-        totalSpent  = monthly.filter { !$0.isIncome }.reduce(0) { $0 + $1.amount }
+        // All amounts are converted to CAD for chart totals.
+        let cad = { (tx: Transaction) in tx.amount * tx.currency.cadConversionRate }
+
+        totalIncome = monthly.filter(\.isIncome).reduce(0) { $0 + cad($1) }
+        totalSpent  = monthly.filter { !$0.isIncome }.reduce(0) { $0 + cad($1) }
 
         var groups: [String: Double] = [:]
         for tx in monthly where !tx.isIncome {
-            groups[tx.category, default: 0] += tx.amount
+            groups[tx.category, default: 0] += cad(tx)
         }
         let sorted = groups.sorted { $0.value > $1.value }
 

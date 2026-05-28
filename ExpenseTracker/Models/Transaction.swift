@@ -47,13 +47,35 @@ enum TxType: String, Codable, CaseIterable {
 enum Currency: String, Codable, CaseIterable {
     case cad = "CAD"
     case usd = "USD"
+    case cny = "CNY"
 
     var code: String { rawValue }
+
+    /// Currency sign used in transaction rows — distinct per currency.
+    var symbol: String {
+        switch self {
+        case .cad: return "$"
+        case .usd: return "US$"
+        case .cny: return "¥"
+        }
+    }
+
+    /// Multiply a transaction amount by this to convert it to CAD.
+    /// Rates: 1 CAD ≈ 0.7 USD  →  1 USD ≈ 1.4286 CAD
+    ///        1 CAD ≈ 5 CNY    →  1 CNY = 0.20 CAD
+    var cadConversionRate: Double {
+        switch self {
+        case .cad: return 1.0
+        case .usd: return 1.0 / 0.7
+        case .cny: return 1.0 / 5.0
+        }
+    }
 
     var displayName: String {
         switch self {
         case .cad: return "Canadian Dollar (CAD)"
         case .usd: return "US Dollar (USD)"
+        case .cny: return "Chinese Yuan (CNY)"
         }
     }
 }

@@ -171,6 +171,10 @@ class EmailParserService {
         if lower.contains("usd") || lower.contains("u.s. dollar") || lower.contains("us dollar") {
             return .usd
         }
+        if lower.contains("cny") || lower.contains("rmb") || lower.contains("chinese yuan")
+            || lower.contains("人民币") || lower.contains("¥") {
+            return .cny
+        }
         return .cad
     }
 
