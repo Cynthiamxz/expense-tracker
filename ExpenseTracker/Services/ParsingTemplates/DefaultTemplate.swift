@@ -75,11 +75,24 @@ extension EmailParserService {
             print("[Parser] ❌ No amount found (e-transfer) in \(messageId)")
             return nil
         }
-        // Use the contact name as the description — more meaningful than the subject.
-        let contactPattern = #"(?i)contact name\s*:\s*(.+)"#
-        let contactName = extractText(from: body, pattern: contactPattern)?
+        // After HTML stripping the body is one long line, so stop the name capture
+        // before the next field label (any word(s) followed by a colon).
+        let namePattern  = #"(?i)contact name\s*:\s*(.+?)(?=\s+\w[\w ]*:)"#
+        // Email addresses contain no spaces, so \S+ captures exactly the address.
+        let emailPattern = #"(?i)contact email address\s*:\s*(\S+)"#
+        let contactName  = extractText(from: body, pattern: namePattern)?
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        let description = contactName ?? subject
+        let contactEmail = extractText(from: body, pattern: emailPattern)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let description: String
+        if let name = contactName {
+            let direction = subject.lowercased().contains("sent") ? "to" : "from"
+            let suffix    = contactEmail.map { " (\($0))" } ?? ""
+            description   = "e-Transfer \(direction) \(name)\(suffix)"
+        } else {
+            description = subject
+        }
 
         let date     = extractDate(from: body, fallbackDate: fallbackDate) ?? Date.now
         let currency = detectCurrency(from: body)
