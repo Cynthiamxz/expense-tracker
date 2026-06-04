@@ -81,7 +81,6 @@ struct AddTransactionView: View {
             description: description.trimmingCharacters(in: .whitespaces),
             category:    selectedCategory,
             account:     .other,
-            type:        .credit,
             currency:    selectedCurrency,
             isManual:    true
         )

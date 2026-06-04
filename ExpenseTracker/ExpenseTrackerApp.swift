@@ -18,7 +18,7 @@ struct ExpenseTrackerApp: App {
 
     // Bump this whenever a stored @Model property is added or renamed.
     // The mismatch triggers a proactive store wipe before SwiftData reads any rows.
-    private static let schemaVersion    = 3
+    private static let schemaVersion    = 4
     private static let schemaVersionKey = "app_schema_version"
 
     private static let container: ModelContainer = {

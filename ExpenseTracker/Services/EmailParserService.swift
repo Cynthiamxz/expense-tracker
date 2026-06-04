@@ -22,9 +22,6 @@ class EmailParserService {
     let chequingKeywords   = ["chequing", "checking", "account alert", "bank account"]
     let creditCardKeywords = ["credit card", "visa", "mastercard", "card ending"]
     let eTransferKeywords  = ["interac", "e-transfer", "etransfer"]
-    let refundKeywords     = ["refund", "return", "reversal", "chargeback"]
-    let depositKeywords    = ["deposit", "received", "credited", "added"]
-    let debitKeywords      = ["purchase", "payment", "withdrawal", "paid", "charged", "debit"]
 
     // UPDATE: if CIBC bodies use "CAD $X.XX" or "Amount: X.XX" without a "$", adjust.
     let amountPattern = #"\$([0-9,]+\.[0-9]{2})"#

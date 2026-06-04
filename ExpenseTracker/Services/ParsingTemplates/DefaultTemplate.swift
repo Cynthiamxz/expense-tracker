@@ -21,6 +21,10 @@ extension EmailParserService {
             return parseChequingDefault(body, subject: subject,
                                         messageId: messageId, fallbackDate: fallbackDate)
         }
+        if eTransferKeywords.contains(where: { combined.contains($0) }) {
+            return parseETransferDefault(body, subject: subject,
+                                         messageId: messageId, fallbackDate: fallbackDate)
+        }
 
         print("[Parser] ⚠️  No account-type keyword matched in message \(messageId) — subject: \(subject)")
         return nil
@@ -35,13 +39,12 @@ extension EmailParserService {
         }
         let description = extractMerchant(from: body) ?? subject
         let date        = extractDate(from: body, fallbackDate: fallbackDate) ?? Date.now
-        let type        = determineTxType(subject: subject, body: body, account: .chequing)
         let currency    = detectCurrency(from: body)
         let category    = detectCategory(from: description, body: body)
         return Transaction(
             date: date, amount: amount,
             description: description.trimmingCharacters(in: .whitespacesAndNewlines),
-            category: category, account: .chequing, type: type, currency: currency,
+            category: category, account: .chequing, currency: currency,
             isManual: false, gmailMessageId: messageId
         )
     }
@@ -55,13 +58,39 @@ extension EmailParserService {
         }
         let description = extractMerchant(from: body) ?? subject
         let date        = extractDate(from: body, fallbackDate: fallbackDate) ?? Date.now
-        let type        = determineTxType(subject: subject, body: body, account: .creditCard)
         let currency    = detectCurrency(from: body)
         let category    = detectCategory(from: description, body: body)
         return Transaction(
             date: date, amount: amount,
             description: description.trimmingCharacters(in: .whitespacesAndNewlines),
-            category: category, account: .creditCard, type: type, currency: currency,
+            category: category, account: .creditCard, currency: currency,
+            isManual: false, gmailMessageId: messageId
+        )
+    }
+
+    private func parseETransferDefault(
+        _ body: String, subject: String, messageId: String, fallbackDate: Date?
+    ) -> Transaction? {
+        guard let amount = extractAmount(from: body) else {
+            print("[Parser] ❌ No amount found (e-transfer) in \(messageId)")
+            return nil
+        }
+        // Use the contact name as the description — more meaningful than the subject.
+        let contactPattern = #"(?i)contact name\s*:\s*(.+)"#
+        let contactName = extractText(from: body, pattern: contactPattern)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let description = contactName ?? subject
+
+        let date     = extractDate(from: body, fallbackDate: fallbackDate) ?? Date.now
+        let currency = detectCurrency(from: body)
+        // Default to "e-Transfer"; only override if detectCategory finds a stronger match.
+        let detected = detectCategory(from: description, body: body)
+        let category = detected == "Other" ? "e-Transfer" : detected
+
+        return Transaction(
+            date: date, amount: amount,
+            description: description.trimmingCharacters(in: .whitespacesAndNewlines),
+            category: category, account: .chequing, currency: currency,
             isManual: false, gmailMessageId: messageId
         )
     }
@@ -76,11 +105,4 @@ extension EmailParserService {
         return nil
     }
 
-    func determineTxType(subject: String, body: String, account: Account) -> TxType {
-        let combined = (subject + " " + body).lowercased()
-        if eTransferKeywords.contains(where: { combined.contains($0) }) { return .eTransfer }
-        if refundKeywords.contains(where:    { combined.contains($0) }) { return .refund    }
-        if debitKeywords.contains(where:     { combined.contains($0) }) { return .debit     }
-        return .credit
-    }
 }

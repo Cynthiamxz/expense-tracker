@@ -50,9 +50,9 @@ struct DateGroupView: View {
 
 #Preview {
     let tx1 = Transaction(date: Date(), amount: 42.99, description: "Tim Hortons",
-                          account: .chequing, type: .debit, isManual: false)
+                          account: .chequing, isManual: false)
     let tx2 = Transaction(date: Date(), amount: 12.50, description: "Uber",
-                          account: .creditCard, type: .debit, isManual: false)
+                          account: .creditCard, isManual: false)
     List {
         DateGroupView(header: "MAY 24", transactions: [tx1, tx2], onSelect: { _ in })
     }

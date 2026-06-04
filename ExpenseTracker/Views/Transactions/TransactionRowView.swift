@@ -49,7 +49,7 @@ struct TransactionRowView: View {
 
 #Preview {
     let tx = Transaction(date: Date(), amount: 42.99, description: "Tim Hortons",
-                         account: .chequing, type: .debit, isManual: false)
+                         account: .chequing, isManual: false)
     TransactionRowView(transaction: tx)
         .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }

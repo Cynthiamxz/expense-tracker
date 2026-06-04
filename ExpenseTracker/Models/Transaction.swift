@@ -27,22 +27,6 @@ enum Account: String, Codable, CaseIterable {
     }
 }
 
-// Stored on Transaction.type — classifies the financial direction of a transaction.
-enum TxType: String, Codable, CaseIterable {
-    case debit
-    case credit
-    case refund
-    case eTransfer
-
-    var displayName: String {
-        switch self {
-        case .debit:     return "Debit"
-        case .credit:    return "Credit"
-        case .refund:    return "Refund"
-        case .eTransfer: return "e-Transfer"
-        }
-    }
-}
 
 enum Currency: String, Codable, CaseIterable {
     case cad = "CAD"
@@ -84,7 +68,6 @@ enum Currency: String, Codable, CaseIterable {
 final class Transaction {
     var id: UUID
     var date: Date
-    // Always a positive CAD value. Sign is conveyed by `type` (debit vs credit).
     var amount: Double
     // Raw description string from the CIBC email — never modified after import.
     var rawDescription: String
@@ -93,7 +76,6 @@ final class Transaction {
     // Category name string (matches Category.name). Defaults to "Other" on import.
     var category: String
     var account: Account
-    var type: TxType
     // Stored as a String so the @Model macro accepts the "CAD" literal default,
     // which SwiftData uses as the column default during lightweight migration.
     var currencyCode: String = "CAD"
@@ -116,7 +98,6 @@ final class Transaction {
         descriptionClean: String? = nil,
         category: String = "Other",
         account: Account,
-        type: TxType,
         currency: Currency = .cad,
         isManual: Bool,
         gmailMessageId: String? = nil
@@ -128,7 +109,6 @@ final class Transaction {
         self.descriptionClean = descriptionClean
         self.category = category
         self.account = account
-        self.type = type
         self.currencyCode = currency.rawValue
         self.isManual = isManual
         self.gmailMessageId = gmailMessageId

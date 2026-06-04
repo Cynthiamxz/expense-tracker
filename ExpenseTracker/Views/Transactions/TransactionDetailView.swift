@@ -18,7 +18,7 @@ struct TransactionDetailView: View {
 
     @State private var displayName: String
     @State private var selectedCategory: String
-    @State private var selectedType: TxType
+    @State private var selectedAccount: Account
     @State private var selectedCurrency: Currency
     @State private var showDeleteConfirmation: Bool = false
 
@@ -27,7 +27,7 @@ struct TransactionDetailView: View {
         self.onDelete = onDelete
         _displayName      = State(initialValue: transaction.descriptionClean ?? "")
         _selectedCategory = State(initialValue: transaction.category)
-        _selectedType     = State(initialValue: transaction.type)
+        _selectedAccount  = State(initialValue: transaction.account)
         _selectedCurrency = State(initialValue: transaction.currency)
     }
 
@@ -75,10 +75,6 @@ struct TransactionDetailView: View {
                 Text(transaction.date.formatted(date: .abbreviated, time: .omitted))
                     .foregroundStyle(.secondary)
             }
-            LabeledContent("Account") {
-                Text(transaction.account.displayName)
-                    .foregroundStyle(.secondary)
-            }
             LabeledContent("Description") {
                 Text(transaction.rawDescription)
                     .foregroundStyle(.secondary)
@@ -99,9 +95,9 @@ struct TransactionDetailView: View {
         Section("Edit") {
             TextField("Set display name…", text: $displayName)
             CategoryPickerView(selectedCategoryName: $selectedCategory)
-            Picker("Type", selection: $selectedType) {
-                ForEach(TxType.allCases, id: \.self) { type in
-                    Text(type.displayName).tag(type)
+            Picker("Account", selection: $selectedAccount) {
+                ForEach(Account.allCases, id: \.self) { acc in
+                    Text(acc.displayName).tag(acc)
                 }
             }
             Picker("Currency", selection: $selectedCurrency) {
@@ -126,14 +122,14 @@ struct TransactionDetailView: View {
     private func saveChanges() {
         transaction.descriptionClean = displayName.isEmpty ? nil : displayName
         transaction.category         = selectedCategory
-        transaction.type             = selectedType
+        transaction.account          = selectedAccount
         transaction.currency         = selectedCurrency
     }
 }
 
 #Preview {
     let tx = Transaction(date: Date(), amount: 42.99, description: "Tim Hortons",
-                         account: .chequing, type: .debit, isManual: false)
+                         account: .chequing, isManual: false)
     TransactionDetailView(transaction: tx, onDelete: {})
         .modelContainer(for: [Transaction.self, Category.self], inMemory: true)
 }

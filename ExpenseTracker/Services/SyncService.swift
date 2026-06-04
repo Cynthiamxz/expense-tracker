@@ -73,12 +73,26 @@ class SyncService: ObservableObject {
             lastSyncDate = Date.now
 
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = friendlyMessage(for: error)
             print("[Sync] ❌ Sync failed: \(error)")
         }
     }
 
     // MARK: - Private helpers
+
+    private func friendlyMessage(for error: Error) -> String {
+        let raw = error.localizedDescription
+        if raw.contains("400") || raw.contains("401") || raw.contains("invalid_grant") {
+            return "Gmail session expired — reconnect in Settings"
+        }
+        if raw.contains("not signed in") || raw.contains("Not signed in") {
+            return "Not connected to Gmail — tap Settings"
+        }
+        if raw.contains("network") || raw.contains("offline") || raw.contains("-1009") {
+            return "No internet connection"
+        }
+        return "Sync failed — check Settings"
+    }
 
     // Returns the set of Gmail message IDs already persisted in SwiftData.
     // Fetches only non-manual transactions since manual entries have nil gmailMessageId.

@@ -32,7 +32,6 @@ extension EmailParserService {
             description:    description,
             category:       category,
             account:        .creditCard,
-            type:           .debit,
             currency:       currency,
             isManual:       false,
             gmailMessageId: messageId

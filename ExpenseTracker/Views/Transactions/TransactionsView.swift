@@ -59,13 +59,21 @@ struct TransactionsView: View {
                 ProgressView()
                     .scaleEffect(0.7)
                 Text("Syncing…")
+            } else if let error = syncService.errorMessage {
+                Image(systemName: "exclamationmark.circle")
+                Text(error)
+                    .lineLimit(1)
             } else {
                 Image(systemName: "clock")
                 Text(syncStatusText)
             }
         }
         .font(.caption.monospaced())
-        .foregroundStyle(Color(hex: Constants.Design.mutedText))
+        .foregroundStyle(
+            syncService.errorMessage != nil
+                ? Color(hex: Constants.Design.spentRedText)
+                : Color(hex: Constants.Design.mutedText)
+        )
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
